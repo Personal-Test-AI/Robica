@@ -158,7 +158,7 @@
   }
 
   #birthday-page {
-    display: block;
+    display: none;
     min-height: 100vh;
     background: var(--dark);
     position: relative;
@@ -402,6 +402,22 @@
   .car-wrapper { border-radius: 16px; overflow: hidden; }
 
     .bmw-section { width:100%; margin-top:1rem; }
+  
+  #countdown-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: var(--dark);
+  }
+  .simple-timer {
+    font-size: clamp(80px, 22vw, 200px);
+    font-weight: 900;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: 8px;
+  }
+
   </style>
 </head>
 <body>
@@ -410,31 +426,8 @@
 <div class="floating-emojis" id="floaters"></div>
 
 <!-- NUMĂRĂTOARE INVERSĂ -->
-<div id="countdown-page" style="display:none">
-  <div class="pre-title">⏳ Numărătoare inversă</div>
-  <div class="main-title">ROBERT</div>
-  <div class="subtitle">3 mai · Ziua lui se apropie 🎂</div>
-  <div class="timer-wrapper">
-    <div class="time-block">
-      <div class="time-number" id="days">00</div>
-      <div class="time-label">Zile</div>
-    </div>
-    <div class="colon">:</div>
-    <div class="time-block">
-      <div class="time-number" id="hours">00</div>
-      <div class="time-label">Ore</div>
-    </div>
-    <div class="colon">:</div>
-    <div class="time-block">
-      <div class="time-number" id="minutes">00</div>
-      <div class="time-label">Min</div>
-    </div>
-    <div class="colon">:</div>
-    <div class="time-block">
-      <div class="time-number" id="seconds">00</div>
-      <div class="time-label">Sec</div>
-    </div>
-  </div>
+<div id="countdown-page">
+  <div class="simple-timer" id="simple-timer">10:00</div>
 </div>
 
 <!-- PAGINA DE ZIUA DE NAȘTERE -->
@@ -610,39 +603,18 @@ emojis.forEach((em, i) => {
 });
 
 // NUMĂRĂTOARE
-const TARGET = new Date('2026-05-03T00:00:00');
+let secondsLeft = 10 * 60; // 10 minute
 
-function pad(n) { return String(n).padStart(2, '0'); }
-
-function flashEl(id) {
-  const el = document.getElementById(id);
-  el.classList.add('flash');
-  setTimeout(() => el.classList.remove('flash'), 200);
-}
-
-let prevVals = {};
 function updateCountdown() {
-  const now = new Date();
-  const diff = TARGET - now;
-
-  if (diff <= 0) { showBirthday(); return; }
-
-  const d = Math.floor(diff / 86400000);
-  const h = Math.floor((diff % 86400000) / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  const s = Math.floor((diff % 60000) / 1000);
-
-  const vals = { days: d, hours: h, minutes: m, seconds: s };
-  for (const [id, val] of Object.entries(vals)) {
-    const str = id === 'days' ? String(val) : pad(val);
-    const el = document.getElementById(id);
-    if (prevVals[id] !== str) {
-      el.textContent = str;
-      el.setAttribute('data-val', str);
-      flashEl(id);
-      prevVals[id] = str;
-    }
+  if (secondsLeft <= 0) {
+    showBirthday();
+    return;
   }
+  const m = Math.floor(secondsLeft / 60);
+  const s = secondsLeft % 60;
+  document.getElementById('simple-timer').textContent =
+    String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  secondsLeft--;
 }
 
 updateCountdown();
