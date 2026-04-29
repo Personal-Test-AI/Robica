@@ -603,18 +603,28 @@ emojis.forEach((em, i) => {
 });
 
 // NUMĂRĂTOARE
-let secondsLeft = 10 * 60; // 10 minute
+// PROBA: 5 minute de acum
+const END_TIME = Date.now() + 5 * 60 * 1000;
 
 function updateCountdown() {
-  if (secondsLeft <= 0) {
+  const remaining = END_TIME - Date.now();
+  if (remaining <= 0) {
     showBirthday();
     return;
   }
-  const m = Math.floor(secondsLeft / 60);
-  const s = secondsLeft % 60;
-  document.getElementById('simple-timer').textContent =
-    String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-  secondsLeft--;
+  const totalSec = Math.ceil(remaining / 1000);
+  const d = Math.floor(totalSec / 86400);
+  const h = Math.floor((totalSec % 86400) / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+
+  let display;
+  if (d > 0) {
+    display = d + 'z ' + String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  } else {
+    display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  }
+  document.getElementById('simple-timer').textContent = display;
 }
 
 updateCountdown();
