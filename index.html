@@ -603,12 +603,45 @@ emojis.forEach((em, i) => {
 });
 
 // NUMĂRĂTOARE
-// PROBA: 5 minute de acum
-const END_TIME = Date.now() + 5 * 60 * 1000;
+// === SUPABASE TIMER ===
+const SB_URL  = 'https://lkzqjvoxmjajtrrwneuw.supabase.co';
+const SB_KEY  = 'sb_publishable_Ucv0UMTJ4J-FjNE6DoqgrQ_lsJNPMVH';
+const HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
+const TEST_MINUTES = 5;
 
-function updateCountdown() {
-  const remaining = END_TIME - Date.now();
+let endTime = null;
+let timerInterval = null;
+
+async function initTimer() {
+  try {
+    // Citim end_time din Supabase
+    const res = await fetch(SB_URL + '/rest/v1/robert_timer?id=eq.1&select=end_time', { headers: HEADERS });
+    const data = await res.json();
+    const stored = data[0]?.end_time || 0;
+
+    if (stored <= Date.now()) {
+      // Prima deschidere sau expirat — setăm test de 5 minute
+      endTime = Date.now() + TEST_MINUTES * 60 * 1000;
+      await fetch(SB_URL + '/rest/v1/robert_timer?id=eq.1', {
+        method: 'PATCH',
+        headers: HEADERS,
+        body: JSON.stringify({ end_time: endTime })
+      });
+    } else {
+      endTime = stored;
+    }
+  } catch(e) {
+    // Fallback dacă Supabase nu răspunde
+    endTime = Date.now() + TEST_MINUTES * 60 * 1000;
+  }
+  tickTimer();
+  timerInterval = setInterval(tickTimer, 1000);
+}
+
+function tickTimer() {
+  const remaining = endTime - Date.now();
   if (remaining <= 0) {
+    clearInterval(timerInterval);
     showBirthday();
     return;
   }
@@ -617,7 +650,6 @@ function updateCountdown() {
   const h = Math.floor((totalSec % 86400) / 3600);
   const m = Math.floor((totalSec % 3600) / 60);
   const s = totalSec % 60;
-
   let display;
   if (d > 0) {
     display = d + 'z ' + String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
@@ -627,8 +659,7 @@ function updateCountdown() {
   document.getElementById('simple-timer').textContent = display;
 }
 
-updateCountdown();
-setInterval(updateCountdown, 1000);
+initTimer();
 
 function showBirthday() {
   document.getElementById('countdown-page').style.display = 'none';
